@@ -30,6 +30,10 @@ Sample_ID,Timestamp,Process,PID,URL,Address_Handle,Tab_Handle,Version,Window_Han
 0143692D264FD906F10B8ECAB0F139D1,2012-05-07 12:33:36,360chrome.exe,436,www.hao123.com,401e2,NULL,5.2.0.804,,,
 0143692D264FD906F10B8ECAB0F139D1,2012-05-07 12:33:38,360chrome.exe,436,www.hao123.com,5024c,301fa,5.2.0.804,,,
                 '''
+# ---------------------------
+merged_behavior_path = "C:\\Users\\nxxia\Desktop\商业数据分析\datas\merged_behavior.csv"
+demographic_csv_path = "C:\\Users\\nxxia\Desktop\商业数据分析\datas\data\demographic.csv"
+
 #分析timestamp字段
 
 
@@ -46,3 +50,5 @@ Sample_ID,Timestamp,Process,PID,URL,Address_Handle,Tab_Handle,Version,Window_Han
 
 #
 
+if __name__ == '__main__':
+    pass

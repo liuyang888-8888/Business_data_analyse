@@ -6,8 +6,10 @@ import os
 import glob
 import pandas as pd
 from datetime import datetime, timedelta
+# import tqdm
 
 from joblib import Parallel, delayed
+from tqdm import tqdm
 
 
 def code_llama():
@@ -150,10 +152,65 @@ def Baiduwenxin():
     behavior_df.to_csv('merged_behavior.csv', index=False, encoding='utf-8')
 
 def check():
-    df=pd.read_csv(f'C:\\Users\\nxxia\Desktop\商业数据分析\datas\merged_behavior.csv')
-    print(df.head())
-    print("#" * 20)
-    print(df.info())
+    #E:\Postgraduate\behavior
+    import os
+
+    count = 0
+
+    # 初始化一个空的DataFrame来存储合并后的行为数据
+
+    # 遍历behavior文件夹中的所有日志文件
+    for root, dirs, files in os.walk('E:\Postgraduate\\behavior'):
+        for file in tqdm(files,desc='Processing files', unit='file'):
+            if file.endswith('.txt'):
+                file_path = os.path.join(root, file)
+                file_name = os.path.basename(file_path)
+                sample_id = file_name.split('_')[0]
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+
+                    # 解析Last和L_Start
+                    last_update = int(lines[0].split('<=>')[1].strip())
+                    start_time_str = lines[1].split('<=>')[1].strip()
+                    print(start_time_str)
+                    start_time = datetime.strptime(start_time_str, '%Y-%m-%d %H-%M-%S')
+                    # 遍历其余行并解析行为数据
+                    for line in lines[2:]:
+                        if line.strip():  # 跳过空行
+                            row_data = {
+                                'Sample_ID': sample_id,
+                                'Timestamp': None,  # 格式化时间戳为字符串
+                                'Process': None,
+                                'PID': None,
+                                'URL': None,
+                                'Address_Handle': None,
+                                'Tab_Handle': None,
+                                'Version': None,
+                                'Window_Handle': None,
+                                'Program_Name': None,
+                                'Company': None,
+                            }
+                            fields = line.strip().split('[=]')
+                            if fields[0].split('<=>')[0] != 'T':
+                                continue
+                            for field in fields:
+                                try:
+                                    key, value = field.split('<=>')
+                                except Exception as e:
+                                    print('Error in file:', file_path)
+                                    print('Error line:', line)
+
+                                    raise ValueError('Error in file:', file_path)
+
+                                # 根据不同的key值将数据添加到DataFrame中
+                                if key == 'T':
+                                    timestamp = start_time + timedelta(seconds=int(value))  # 计算时间戳
+                                    specified_time = datetime(1, 2, 2, 9, 33, 4)
+                                    row_data['Timestamp'] = timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                                    if timestamp<specified_time:
+                                        print(file_path)
+                                        raise
+
 
 
 

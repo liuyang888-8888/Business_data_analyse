@@ -24,9 +24,9 @@ def get_all_data():
     reviews = [sub[1] for sub in data_list]
     return data_list
 
-def save_behavior_data():
+def update_behavior_data():
     # 读取CSV文件
-    data = pd.read_csv(config.merged_behavior_path)
+    sql = """SELECT behavior.index,url FROM behavior"""
 
 
 
@@ -36,37 +36,14 @@ def save_behavior_data():
 
 
     # 插入数据
-    for index, row in data.iterrows():
-        if pd.isna(row['Process']):
-            proces= None
-        else:
-            proces=row['Process']
 
-        if pd.isna(row['URL']):
-            ur=None
-        else:
-            if len(row['URL'])>255:
-                ur=row['URL'][:253]
-            else:
-                ur=row['URL']
+    cursor.execute(sql)
+    raw_data_tuple = cursor.fetchall()
 
-        if pd.isna(row['Program_Name']):
-            proname=None
-        else:
-            proname=row['Program_Name']
-
-        if pd.isna(row['Company']):
-            comp=None
-        else:
-            comp=row['Company']
-        cursor.execute('INSERT INTO behavior (id,time,process,url,program_name,company) VALUES (%s, %s,%s,%s,%s,%s)',
-                       (row['Sample_ID'],
-                        row['Timestamp'],
-                        proces,
-                        ur,
-                        proname,
-                        comp))
-
+    for i,row in enumerate(raw_data_tuple):
+        #url_dom='{}',url_label='{}'
+        update_sql=f"""UPDATE behavior SET url_dom='{}',url_label='{}' WHERE `index`={row[0]}"""
+        cursor.execute(sql)
     # 提交事务
     conn.commit()
 
@@ -75,5 +52,5 @@ def save_behavior_data():
     conn.close()
 
 if __name__=="__main__":
-    #save_behavior_data()
-    pass
+    save_behavior_data()
+    # pass

@@ -2,6 +2,8 @@
 #  道阻且长，行则将至
 # -----Sunnyln---
 #  5/10/2024  1:28 PM
+import pandas as pd
+
 from Lib import config
 '''
 row_data = {
@@ -33,3 +35,10 @@ Sample_ID,Timestamp,Process,PID,URL,Address_Handle,Tab_Handle,Version,Window_Han
 # ---------------------------
 merged_data_path=config.merged_behavior_path
 demographic_csv_path=config.demographic_csv_path
+
+def sort():
+    data=pd.read_csv(merged_data_path)
+    pass
+
+if __name__=="__main__":
+    pass

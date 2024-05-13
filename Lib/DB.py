@@ -6,24 +6,12 @@
 # 日 期：2024/4/29 
 # 时 间：21:03
 import pandas as pd
+from joblib import Parallel, delayed
+from tqdm import tqdm
+
 import config
 import pymysql
-def get_all_data():
-    # 从数据库取数据
-
-    #名称 评论 主题 来源
-    sql = """SELECT screen_name,text,topics,source FROM `weibo`"""
-    db = pymysql.connect(**config.mysql_config)
-    cursor = db.cursor()
-    cursor.execute("USE weibo")
-    cursor.execute(sql)
-    data_tuple = cursor.fetchall()
-    db.close()
-
-    data_list = [list(ele) for ele in data_tuple]
-    reviews = [sub[1] for sub in data_list]
-    return data_list
-
+import tools.process_data as label
 def update_behavior_data():
     # 读取CSV文件
     sql = """SELECT behavior.index,url FROM behavior"""
@@ -39,11 +27,14 @@ def update_behavior_data():
 
     cursor.execute(sql)
     raw_data_tuple = cursor.fetchall()
-
-    for i,row in enumerate(raw_data_tuple):
+    data_list = [list(ele) for ele in raw_data_tuple]
+    for row in tqdm(data_list):
         #url_dom='{}',url_label='{}'
-        update_sql=f"""UPDATE behavior SET url_dom='{}',url_label='{}' WHERE `index`={row[0]}"""
-        cursor.execute(sql)
+        if row[1] is not None:
+            dom=label.process_data(row[1])
+            labels=label.get_category(dom)
+            update_sql=f"""UPDATE behavior SET url_dom='{dom}',url_label='{labels}' WHERE `index`={row[0]}"""
+            cursor.execute(update_sql)
     # 提交事务
     conn.commit()
 
@@ -51,6 +42,40 @@ def update_behavior_data():
     cursor.close()
     conn.close()
 
+
+def update_all_data():
+    sql = """SELECT behavior.index,url FROM behavior"""
+    # 建立数据库连接
+    conn = pymysql.connect(**config.mysql_config)
+    cursor = conn.cursor()
+
+    # 插入数据
+
+    cursor.execute(sql)
+    raw_data_tuple = cursor.fetchall()
+    data_list = [list(ele) for ele in raw_data_tuple]
+    Parallel(n_jobs=-1, verbose=100)(
+        delayed(muli_update_behavior_data)(file_path) for file_path in
+        tqdm(data_list))
+    conn.commit()
+
+    # 关闭连接
+    cursor.close()
+    conn.close()
+def muli_update_behavior_data(row):
+    if row[1] is not None and row[1] !='NULL':
+        conn = pymysql.connect(**config.mysql_config)
+        cursor = conn.cursor()
+        dom = label.process_data(row[1])
+        labels = label.get_category(dom)
+        update_sql = f"""UPDATE behavior SET url_dom='{dom}',url_label='{labels}' WHERE `index`={row[0]}"""
+        cursor.execute(update_sql)
+        # 提交事务
+        conn.commit()
+
+        # 关闭连接
+        cursor.close()
+        conn.close()
 if __name__=="__main__":
-    save_behavior_data()
+    update_all_data()
     # pass

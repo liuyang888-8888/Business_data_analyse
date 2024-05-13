@@ -8,7 +8,7 @@ mysql_config = {
                 'host':  'localhost',
                 'port': 3306,
                 'user': 'root',
-                'password': 'nxylyy',
+                'password': 'krb666',
                 'charset': 'utf8mb4',
                 'db' :'business'  # 数据库名
             }
